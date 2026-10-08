@@ -22,8 +22,8 @@ tags: [tobii, eye-tracking, head-tracking, extended-view, stream-engine, camera,
 > - a lifecycle sample;
 > - a tuned "extended view" recipe (the camera turns towards where the player looks).
 >
-> Verified 2026-10-09 in Resident Evil 2 with an Eye Tracker 5 and Stream Engine 4.25.0.3 (installed by Tobii
-> Experience) and 4.1.0.3 (SDK copy).
+> Verified 2026-10-09 in Resident Evil 2 with an Eye Tracker 5, across the Stream Engine runtime range 4.1 (the
+> SDK copy) to 4.25 (the copy Tobii Experience installs).
 
 ## When to use it
 - A native mod (REFramework plugin, ASI loader, ReShade add-on, BepInEx native shim, ...) wants gaze or head pose
@@ -47,7 +47,7 @@ Then `GetProcAddress` every function below. **If anything is missing, log one li
 with eye tracking off.** Retry the connect every ~5 s, since the player may plug in the tracker or start Tobii
 Experience late.
 
-## API reference (Stream Engine 4.x, x64, what a game needs)
+## API reference (Stream Engine 4.1 to 4.25, x64, what a game needs)
 Conventions: C ABI, `__cdecl` (the default on x64), every function returns `int32_t` status (0 = OK). Handles are
 opaque pointers. Callbacks run **synchronously inside `tobii_device_process_callbacks`** on the calling thread.
 Don't call any Stream Engine function from inside a callback (it fails with status 16).
@@ -213,7 +213,7 @@ larger turns. The blend below follows MSFS's head/eye ratio idea and was tuned b
 9. **Timestamps drift** without `tobii_wait_for_callbacks` or periodic `tobii_update_timesync`. This only matters
    for absolute timing; EMA smoothing doesn't need timestamps.
 10. **Don't ship the DLL.** Load the installed copy; when it's missing, stay idle. Tested in RE2: no runtime =
-    one log line and a normal game; Tobii Experience's 4.25 runtime = connected, with valid gaze and head pose.
+    one log line and a normal game; Tobii Experience's installed runtime = connected, with valid gaze and head pose.
 
 ## Seen in
 - [Resident Evil 2 (2019): DLSS5 NR + DLSS frame generation + Tobii](../games/resident-evil-2-2019/dlss5-neural-rendering-dlss-frame-generation-in-a-custom-ref.md):

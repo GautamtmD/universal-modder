@@ -1896,7 +1896,7 @@
    "PDPerfPlugin (Nexus RE2 mod 2611)",
    "NVIDIA NGX (DLSS SR 310.8.0, DLSS NR 310.8.0)",
    "NVIDIA Streamline 2.14.1 (DLSS-G 310.9.1, Reflex, PCL)",
-   "Tobii Stream Engine 4.1.0.3",
+   "Tobii Stream Engine runtime 4.1 to 4.25 (tested range)",
    "ReShade 6.8.0 + RenoDX (HDR fix)",
    "PresentMon"
   ],

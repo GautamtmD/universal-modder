@@ -12,7 +12,7 @@ tools:
 - PDPerfPlugin (Nexus RE2 mod 2611)
 - NVIDIA NGX (DLSS SR 310.8.0, DLSS NR 310.8.0)
 - NVIDIA Streamline 2.14.1 (DLSS-G 310.9.1, Reflex, PCL)
-- Tobii Stream Engine 4.1.0.3
+- Tobii Stream Engine runtime 4.1 to 4.25 (tested range)
 - ReShade 6.8.0 + RenoDX (HDR fix)
 - PresentMon
 anti_cheat: none found by um scan; single-player only
@@ -63,8 +63,8 @@ Components:
   NR switches itself off without it.
 - **Streamline 2.14.1** from NVIDIA's official GitHub release: `sl.interposer`, `sl.common`, `sl.dlss_g`,
   `sl.reflex` and `sl.pcl`, plus `nvngx_dlssg.dll` 310.9.1.
-- **Tobii Eye Tracker 5** with Tobii Experience. The plugin uses the `tobii_stream_engine.dll` (4.25.0.3) that
-  Tobii's software installs (gotcha 16); the 4.1.0.3 SDK copy also works.
+- **Tobii Eye Tracker 5** with Tobii Experience. The plugin uses the `tobii_stream_engine.dll` that Tobii's
+  software installs (gotcha 16). Tested from the SDK's 4.1 runtime up to the 4.25 one Tobii Experience installs.
 - **For correct HDR:** ReShade 6.8.0.2155 with add-on support, plus RenoDX
   `renodx-re7-2r-3r-village.addon64` 0.2026.706.2142 (Nexus mod 1644).
 
