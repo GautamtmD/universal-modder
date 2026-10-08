@@ -52,26 +52,30 @@ Conventions: C ABI, `__cdecl` (the default on x64), every function returns `int3
 opaque pointers. Callbacks run **synchronously inside `tobii_device_process_callbacks`** on the calling thread.
 Don't call any Stream Engine function from inside a callback (it fails with status 16).
 
-**Enums (all `int32_t`):**
-| Name | Values |
-|---|---|
-| status | 0 NO_ERROR, 1 INTERNAL, 2 INSUFFICIENT_LICENSE, 3 NOT_SUPPORTED, 4 NOT_AVAILABLE, **5 CONNECTION_FAILED**, 6 TIMED_OUT, 7 ALLOCATION_FAILED, 8 INVALID_PARAMETER, 9 CALIBRATION_ALREADY_STARTED, 10 CALIBRATION_NOT_STARTED, 11 ALREADY_SUBSCRIBED, 12 NOT_SUBSCRIBED, 13 OPERATION_FAILED, 14 CONFLICTING_API_INSTANCES, 15 CALIBRATION_BUSY, 16 CALLBACK_IN_PROGRESS, 17 TOO_MANY_SUBSCRIBERS, **18 CONNECTION_FAILED_DRIVER**, 19 UNAUTHORIZED, 20 FIRMWARE_UPGRADE_IN_PROGRESS |
-| validity | 0 INVALID, 1 VALID |
-| field of use | **1 INTERACTIVE** (no license needed: data used as live input only), 2 ANALYTICAL (needs a Tobii license: recording or analysing attention) |
-| stream (for `tobii_stream_supported`) | 0 GAZE_POINT, 1 GAZE_ORIGIN, 2 EYE_POSITION_NORMALIZED, 3 USER_PRESENCE, 4 HEAD_POSE |
+**Numbers you need** (all `int32_t`):
+- **Status codes.** 0 means success. 5 and 18 both mean the link to the tracker dropped; recover with
+  `tobii_device_reconnect` (with a cooldown) and keep pumping. 6 is only returned by `tobii_wait_for_callbacks`
+  when nothing arrived in time; just wait again. 16 means you called the API from inside one of its own
+  callbacks. 2 means the feature needs a Tobii license. Treat anything else as "not available right now":
+  log `tobii_error_message(code)` and retry later.
+- **Validity flag** in the data structs: 1 = this value is good, 0 = ignore it.
+- **Mode** (third argument of `tobii_device_create`): pass **1**, the mode for live interaction (camera control, UI). It
+  needs no license. The other mode (2) is for recording or analysing where people look and requires a license
+  from Tobii.
+- **Stream ids** for the optional `tobii_stream_supported`: gaze point = 0, head pose = 4.
 
 **Structs passed to callbacks** (natural alignment; byte offsets verified with `static_assert`):
 ```c
-typedef struct { int64_t timestamp_us; int32_t validity; float x, y; } TobiiGazePoint;
-/* offsets: timestamp_us 0, validity 8, x 12, y 16. sizeof 24 */
+typedef struct { int64_t time_us; int32_t ok; float x, y; } GazeSample;
+/* offsets: time_us 0, ok 8, x 12, y 16. sizeof 24 */
 
 typedef struct {
-    int64_t timestamp_us;      /* 0 */
-    int32_t position_validity; /* 8 */
-    float   position_xyz[3];   /* 12: millimetres from the centre of the display */
-    int32_t rotation_validity[3]; /* 24: one validity per axis */
-    float   rotation_xyz[3];   /* 36: RADIANS, right-handed Euler; [0]=pitch [1]=yaw [2]=roll */
-} TobiiHeadPose;               /* sizeof 48 */
+    int64_t time_us;     /* 0 */
+    int32_t pos_ok;      /* 8 */
+    float   pos_mm[3];   /* 12: head position in mm, measured from the middle of the monitor */
+    int32_t rot_ok[3];   /* 24: a separate validity flag for each rotation axis */
+    float   rot_rad[3];  /* 36: head angles in RADIANS: [0] pitch, [1] yaw, [2] roll */
+} HeadSample;            /* sizeof 48 */
 ```
 - **Gaze** `x, y`: normalized screen coordinates, (0,0) = top-left and (1,1) = bottom-right of the monitor.
   Values go outside 0–1 when the player looks off screen; y ≈ 1.7 was seen looking below the monitor.
@@ -80,18 +84,18 @@ typedef struct {
 **Functions** (our own declarations, as function-pointer types):
 ```c
 typedef void* TobiiApi; typedef void* TobiiDevice;
-int32_t tobii_api_create(TobiiApi* api, const void* custom_alloc /*NULL*/, const void* custom_log /*NULL*/);
+int32_t tobii_api_create(TobiiApi* api, const void* alloc_hooks /*NULL*/, const void* log_hook /*NULL*/);
 int32_t tobii_api_destroy(TobiiApi api);
 int32_t tobii_enumerate_local_device_urls(TobiiApi api,
             void (*receiver)(const char* url, void* user), void* user);  /* copy url inside the callback */
-int32_t tobii_device_create(TobiiApi api, const char* url, int32_t field_of_use /*1*/, TobiiDevice* device);
+int32_t tobii_device_create(TobiiApi api, const char* url, int32_t mode /*1*/, TobiiDevice* device);
 int32_t tobii_device_destroy(TobiiDevice device);
 int32_t tobii_device_reconnect(TobiiDevice device);           /* after status 5 or 18 */
 int32_t tobii_device_process_callbacks(TobiiDevice device);   /* call >= 10x/s; never blocks */
-int32_t tobii_wait_for_callbacks(int32_t device_count, TobiiDevice const* devices); /* optional; blocks <= ~hundreds of ms, 6 = timeout (not an error) */
-int32_t tobii_gaze_point_subscribe(TobiiDevice d, void (*cb)(const TobiiGazePoint*, void* user), void* user);
+int32_t tobii_wait_for_callbacks(int32_t count, TobiiDevice const* list); /* optional; blocks <= ~hundreds of ms, 6 = timeout (not an error) */
+int32_t tobii_gaze_point_subscribe(TobiiDevice d, void (*cb)(const GazeSample*, void* user), void* user);
 int32_t tobii_gaze_point_unsubscribe(TobiiDevice d);
-int32_t tobii_head_pose_subscribe(TobiiDevice d, void (*cb)(const TobiiHeadPose*, void* user), void* user);
+int32_t tobii_head_pose_subscribe(TobiiDevice d, void (*cb)(const HeadSample*, void* user), void* user);
 int32_t tobii_head_pose_unsubscribe(TobiiDevice d);
 const char* tobii_error_message(int32_t status);
 int32_t tobii_update_timesync(TobiiDevice d);   /* only matters if you compare timestamps across long spans */
@@ -108,7 +112,7 @@ bool connect() {
     tobii_enumerate_local_device_urls(api, [](const char* u, void* p) {
         if (!*(char*)p) strncpy_s((char*)p, 256, u, 255);           // first tracker
     }, url);
-    if (!url[0] || tobii_device_create(api, url, 1 /*INTERACTIVE*/, &dev) != 0) {
+    if (!url[0] || tobii_device_create(api, url, 1 /* live-interaction mode */, &dev) != 0) {
         tobii_api_destroy(api); api = nullptr; return false;
     }
     tobii_gaze_point_subscribe(dev, on_gaze, nullptr);    // store into atomics, nothing else
@@ -124,8 +128,8 @@ void shutdown() {
     if (dev) { tobii_gaze_point_unsubscribe(dev); tobii_head_pose_unsubscribe(dev); tobii_device_destroy(dev); }
     if (api) tobii_api_destroy(api);
 }
-// Callbacks: if (gp->validity == 1) { gaze_x = gp->x; gaze_y = gp->y; gaze_valid = true; } else gaze_valid = false;
-//            head: per-axis rotation_validity[i] == 1, position_validity == 1.
+// Callbacks: if (g->ok == 1) { gaze_x = g->x; gaze_y = g->y; gaze_valid = true; } else gaze_valid = false;
+//            head: check rot_ok[i] == 1 per axis and pos_ok == 1 before using a value.
 ```
 
 ## Extended view: turn the camera towards where the player looks
@@ -187,12 +191,12 @@ larger turns. The blend below follows MSFS's head/eye ratio idea and was tuned b
 ## Gotchas
 1. **Public declarations don't match the installed runtime.** The only browsable Stream Engine bindings online
    (the `tobii-sys` crate on docs.rs) come from v1.2.1. There, `tobii_device_create(api, url, device)` has
-   3 parameters; in 4.x it is `(api, url, field_of_use, device)`. Using the old form against the 4.x DLL puts
+   3 parameters; in 4.x it is `(api, url, mode, device)`. Using the old form against the 4.x DLL puts
    the device pointer in the wrong slot. Use the reference above.
 2. **Where the docs went.** Tobii's PC Gaming developer site documents TGI only. Its getting-started page has one
    sample and no units, ranges or threading rules, and the old Stream Engine pages now redirect to a landing page.
-3. **Rotation units are undocumented, and degrees is the natural wrong guess.** The headers say only
-   "right-handed Euler angles". TGI's head pose *is* in degrees (`YawDegrees`), and the wrapper this project
+3. **Rotation units are undocumented, and degrees is the natural wrong guess.** The headers describe the
+   rotation as Euler angles without ever naming a unit. TGI's head pose *is* in degrees (`YawDegrees`), and the wrapper this project
    started from assumed degrees. Stream Engine reports **radians**: treated as degrees, head control was ~57×
    too weak.
 4. **Signs are game-specific.** In RE2 the eye yaw needed `-2*dx`, head yaw `+`, and pitch `+`. Ship invert flags.
