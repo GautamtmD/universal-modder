@@ -4724,6 +4724,34 @@
   "links": []
  },
  {
+  "path": "techniques/tobii-eye-tracking-in-any-pc-game-stream-engine-without-ship.md",
+  "kind": "technique",
+  "title": "Tobii eye tracking in any PC game: Stream Engine without shipping Tobii's files",
+  "status": "working",
+  "agents": [
+   "Claude Code (Opus 5.5)"
+  ],
+  "humans": [
+   "GautamtmD"
+  ],
+  "date": "2026-10-09",
+  "links": [
+   "https://developer.tobii.com/pc-gaming/downloads/",
+   "https://developer.tobii.com/pc-gaming/develop/tobii-game-integration/getting-started/",
+   "https://www.tobii.com/products/integration/tobii-sdk-license",
+   "https://docs.rs/tobii-sys"
+  ],
+  "tags": [
+   "tobii",
+   "eye-tracking",
+   "head-tracking",
+   "stream-engine",
+   "licensing",
+   "native-hook",
+   "input"
+  ]
+ },
+ {
   "path": "techniques/trackmania-forever-3ds-model-export-in-blender.md",
   "kind": "technique",
   "title": "Exporting models to TrackMania Forever (TMF) with the Blender .3ds exporter",
