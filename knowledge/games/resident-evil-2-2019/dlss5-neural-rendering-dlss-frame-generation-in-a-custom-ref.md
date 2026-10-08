@@ -59,10 +59,12 @@ Components:
   SR through PureDark's PDPerfPlugin.
 - **PDPerfPlugin.dll** (Aug 2023) and `nvngx_dlss.dll` 310.8.0, from Nexus RE2 mod 2611.
 - **NVIDIA's signed `nvngx_dlssnr.dll` 310.8.0** beside `re2.exe`. NVIDIA does not ship it in a public SDK;
-  this note doesn't say where to get it.
+  some games bundle it (the human cites NBA 2K26), so a player can copy it from a game they own. Optional:
+  NR switches itself off without it.
 - **Streamline 2.14.1** from NVIDIA's official GitHub release: `sl.interposer`, `sl.common`, `sl.dlss_g`,
   `sl.reflex` and `sl.pcl`, plus `nvngx_dlssg.dll` 310.9.1.
-- **Tobii Eye Tracker 5** with Tobii Experience; `tobii_stream_engine.dll` 4.1.0.3 beside `re2.exe`.
+- **Tobii Eye Tracker 5** with Tobii Experience. The plugin uses the `tobii_stream_engine.dll` (4.25.0.3) that
+  Tobii's software installs (gotcha 16); the 4.1.0.3 SDK copy also works.
 - **For correct HDR:** ReShade 6.8.0.2155 with add-on support, plus RenoDX
   `renodx-re7-2r-3r-village.addon64` 0.2026.706.2142 (Nexus mod 1644).
 
@@ -241,6 +243,11 @@ Native-hook, inside REFramework itself (a superset `dinput8.dll`), not a plugin 
 15. **Packaging: zips from Windows PowerShell 5.1's `Compress-Archive` store `dir\file` entry names,** which
     some extractors and mod managers turn into files named with backslashes. **Fix:** write the zip with
     `System.IO.Compression` and forward slashes.
+16. **Can the Tobii runtime ship with the mod? No.** The Stream Engine headers carry Tobii AB's notice that
+    reproduction is forbidden without written permission, and the SDK bundle grants no redistribution right.
+    **Fix:** don't ship it. Tobii Experience installs it at `C:\Program Files\Tobii\Tobii EyeX\`, and the plugin
+    falls back to that path (then PATH). Verified 2026-10-09: with no Tobii runtime and no `nvngx_dlssnr.dll`
+    the game runs, DLSS SR and frame generation work, and NR and eye tracking switch off with one log line each.
 
 ## Assets
 None generated. Evidence screenshots and PresentMon CSVs live in the working folder, not in the repo.
