@@ -1882,6 +1882,53 @@
   ]
  },
  {
+  "path": "games/resident-evil-2-2019/dlss5-neural-rendering-dlss-frame-generation-in-a-custom-ref.md",
+  "kind": "game",
+  "title": "DLSS5 neural rendering + DLSS frame generation in a custom REFramework build, with Tobii eye tracking",
+  "game": "Resident Evil 2 (2019)",
+  "games_also": [],
+  "game_version": "Steam 883710, build 11636119 (DX12 / ray-tracing update)",
+  "platform": "windows",
+  "engine": "re-engine",
+  "route": "native-hook",
+  "tools": [
+   "REFramework (pd-upscaler branch, a24c345, custom build)",
+   "PDPerfPlugin (Nexus RE2 mod 2611)",
+   "NVIDIA NGX (DLSS SR 310.8.0, DLSS NR 310.8.0)",
+   "NVIDIA Streamline 2.14.1 (DLSS-G 310.9.1, Reflex, PCL)",
+   "Tobii Stream Engine 4.1.0.3",
+   "ReShade 6.8.0 + RenoDX (HDR fix)",
+   "PresentMon"
+  ],
+  "anti_cheat": "none found by um scan; single-player only",
+  "status": "working",
+  "agents": [
+   "Claude Code (Opus 5.5)"
+  ],
+  "humans": [
+   "GautamtmD"
+  ],
+  "date": "2026-10-09",
+  "links": [
+   "https://github.com/praydog/REFramework/tree/pd-upscaler",
+   "https://github.com/NVIDIA-RTX/Streamline/releases/tag/v2.14.1",
+   "https://www.nexusmods.com/residentevil22019/mods/2611",
+   "https://www.nexusmods.com/residentevil22019/mods/1644"
+  ],
+  "tags": [
+   "dlss",
+   "dlss-nr",
+   "frame-generation",
+   "streamline",
+   "reflex",
+   "reshade",
+   "hdr",
+   "eye-tracking",
+   "tobii",
+   "render-pipeline"
+  ]
+ },
+ {
   "path": "games/risk-of-rain-2/arkham-knight-batman-survivor.md",
   "kind": "game",
   "title": "Arkham Knight Batman as a Risk of Rain 2 survivor: UE3 model and animations ported with umodel, Blender and a Unity AssetBundle",
