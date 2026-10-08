@@ -4737,17 +4737,16 @@
   "date": "2026-10-09",
   "links": [
    "https://developer.tobii.com/pc-gaming/downloads/",
-   "https://developer.tobii.com/pc-gaming/develop/tobii-game-integration/getting-started/",
-   "https://www.tobii.com/products/integration/tobii-sdk-license",
-   "https://docs.rs/tobii-sys"
+   "https://developer.tobii.com/pc-gaming/design-guidelines/explored-features/",
+   "https://www.tobii.com/products/integration/tobii-sdk-license"
   ],
   "tags": [
    "tobii",
    "eye-tracking",
    "head-tracking",
+   "extended-view",
    "stream-engine",
-   "licensing",
-   "native-hook",
+   "camera",
    "input"
   ]
  },

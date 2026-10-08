@@ -248,8 +248,9 @@ Native-hook, inside REFramework itself (a superset `dinput8.dll`), not a plugin 
     **Fix:** don't ship it. Tobii Experience installs it at `C:\Program Files\Tobii\Tobii EyeX\`, and the plugin
     falls back to that path (then PATH). Verified 2026-10-09: with no Tobii runtime and no `nvngx_dlssnr.dll`
     the game runs, DLSS SR and frame generation work, and NR and eye tracking switch off with one log line each.
-    The Stream Engine pitfalls the public docs miss (3- vs 4-parameter `tobii_device_create`, radians, reconnect,
-    no gaze in logs) are in [the Tobii technique note](../../techniques/tobii-eye-tracking-in-any-pc-game-stream-engine-without-ship.md).
+    A self-contained Stream Engine API reference, the extended-view recipe with the tuned values, and the pitfalls
+    the public docs miss (3- vs 4-parameter `tobii_device_create`, radians, reconnect) are in
+    [the Tobii technique note](../../techniques/tobii-eye-tracking-in-any-pc-game-stream-engine-without-ship.md).
 
 ## Assets
 None generated. Evidence screenshots and PresentMon CSVs live in the working folder, not in the repo.
