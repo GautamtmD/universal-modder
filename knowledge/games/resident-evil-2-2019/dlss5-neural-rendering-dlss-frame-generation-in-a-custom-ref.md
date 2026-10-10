@@ -58,9 +58,9 @@ Components:
 - **REFramework**, `pd-upscaler` branch at a24c345, rebuilt with our changes. Its TemporalUpscaler drives DLSS
   SR through PureDark's PDPerfPlugin.
 - **PDPerfPlugin.dll** (Aug 2023) and `nvngx_dlss.dll` 310.8.0, from Nexus RE2 mod 2611.
-- **NVIDIA's signed `nvngx_dlssnr.dll` 310.8.0** beside `re2.exe`. NVIDIA does not ship it in a public SDK;
-  some games bundle it (the human cites NBA 2K26), so a player can copy it from a game they own. Optional:
-  NR switches itself off without it.
+- **NVIDIA's signed `nvngx_dlssnr.dll` 310.8.0** beside `re2.exe`. NVIDIA does not ship it in a public SDK
+  (Streamline 2.14.1 and DLSS SDK 310.9.1 have no NR); NBA 2K27, DLSS 5's launch title (Sept 2026), ships this
+  310.8.0 build, so a player can copy it from their own install. Optional: NR switches itself off without it.
 - **Streamline 2.14.1** from NVIDIA's official GitHub release: `sl.interposer`, `sl.common`, `sl.dlss_g`,
   `sl.reflex` and `sl.pcl`, plus `nvngx_dlssg.dll` 310.9.1.
 - **Tobii Eye Tracker 5** with Tobii Experience. The plugin uses the `tobii_stream_engine.dll` that Tobii's
@@ -143,9 +143,9 @@ Native-hook, inside REFramework itself (a superset `dinput8.dll`), not a plugin 
 4. **Streamline bootstrap, RE2 only, in the REFramework constructor right after the logger exists:**
    - Verify `sl.interposer.dll`'s signature, load it, and `slInit` with `eUseManualHooking |
      eUseFrameBasedResourceTagging | eDisableCLStateTracking` and features DLSS_G, Reflex and PCL.
-   - Pointer-hook `IDXGIFactory2` vtable slot 15. In the hook: `slSetD3DDevice(queue->GetDevice)`, then
-     `slUpgradeInterface(&factory)`, then create the swap chain through the proxy factory. A thread-local guard
-     stops the re-entry when the proxy calls the native slot.
+   - Pointer-hook `IDXGIFactory2` vtable slot 15 (`CreateSwapChainForHwnd`). In the hook:
+     `slSetD3DDevice(queue->GetDevice)`, then `slUpgradeInterface(&factory)`, then create the swap chain through
+     the proxy factory. A thread-local guard stops the re-entry when the proxy calls the native slot.
 5. **REFramework's D3D12Hook "proxy mode":** vtable-hook Present/ResizeBuffers/ResizeTarget on the
    *proxy* object, and take the command queue from creation (the proxy has no native layout for REFramework's
    offset trick).

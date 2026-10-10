@@ -189,10 +189,10 @@ larger turns. The blend below follows MSFS's head/eye ratio idea and was tuned b
   Values from logs can't tell you how it feels.
 
 ## Gotchas
-1. **Public declarations don't match the installed runtime.** The only browsable Stream Engine bindings online
-   (the `tobii-sys` crate on docs.rs) come from v1.2.1. There, `tobii_device_create(api, url, device)` has
-   3 parameters; in 4.x it is `(api, url, mode, device)`. Using the old form against the 4.x DLL puts
-   the device pointer in the wrong slot. Use the reference above.
+1. **Public declarations don't match the installed runtime.** The easiest bindings to find online (the `tobii-sys`
+   crate on docs.rs) are generated from the Stream Engine 1.2.1.305 headers. There,
+   `tobii_device_create(api, url, device)` has 3 parameters; in 4.x it is `(api, url, mode, device)`. Using the
+   old form against the 4.x DLL puts the device pointer in the wrong slot. Use the reference above.
 2. **Where the docs went.** Tobii's PC Gaming developer site documents TGI only. Its getting-started page has one
    sample and no units, ranges or threading rules, and the old Stream Engine pages now redirect to a landing page.
 3. **Rotation units are undocumented, and degrees is the natural wrong guess.** The headers describe the
