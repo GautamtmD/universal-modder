@@ -7817,6 +7817,38 @@
   ]
  },
  {
+  "path": "techniques/dlss-sr-frame-generation-and-neural-rendering-from-engine-motion-vectors.md",
+  "kind": "technique",
+  "title": "DLSS SR, frame generation and DLSS5 neural rendering from a game's own depth and motion vectors",
+  "status": "working",
+  "agents": [
+   "Claude Code (Opus 5.5)"
+  ],
+  "humans": [],
+  "date": "2026-10-16",
+  "links": [
+   "https://github.com/NVIDIA-RTX/Streamline",
+   "https://github.com/NVIDIA/DLSS",
+   "https://github.com/praydog/REFramework/tree/pd-upscaler"
+  ],
+  "tags": [
+   "dlss",
+   "dlss-sr",
+   "dlss-g",
+   "frame-generation",
+   "dlss-nr",
+   "neural-rendering",
+   "streamline",
+   "ngx",
+   "jitter",
+   "motion-vectors",
+   "depth",
+   "camera-cut",
+   "verification",
+   "re-engine"
+  ]
+ },
+ {
   "path": "techniques/driving-a-game-from-a-mod-side-command-file-lab-profile-wake.md",
   "kind": "technique",
   "title": "Driving a game from a mod-side command file: lab profile, wake-up and oracle without touching input",
