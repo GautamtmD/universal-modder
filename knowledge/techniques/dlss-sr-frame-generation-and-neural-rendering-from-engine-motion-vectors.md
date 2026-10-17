@@ -23,7 +23,7 @@ tags: [dlss, dlss-sr, dlss-g, frame-generation, dlss-nr, neural-rendering, strea
 > Built and verified on Resident Evil 2 (2019, RE Engine) by extending REFramework's `pd-upscaler`
 > branch. It should carry over to other RE Engine games that REFramework supports, but none has been tried.
 > The steps are engine-independent wherever the engine gives you the same buffers. Details for the RE2 build
-> are in `games/resident-evil-2-2019/dlss5-neural-rendering-dlss-frame-generation-in-a-custom-ref.md`.
+> are in [the RE2 note](../games/resident-evil-2-2019/dlss5-neural-rendering-dlss-frame-generation-in-a-custom-ref.md).
 
 ## When to use it
 - The game has a temporal anti-aliasing or upscaling path, and you can hook the frame where its colour,
@@ -53,11 +53,15 @@ tags: [dlss, dlss-sr, dlss-g, frame-generation, dlss-nr, neural-rendering, strea
   subrect to the real texture, and log a warning when the sizes differ.
 
 ### 2. Validate each input with the development DLSS DLL
-- The DLSS/Streamline SDK ships a **development** `nvngx_dlss.dll` (`bin/x64/development/`), with debug
-  overlays and Ctrl+Alt hotkeys. Swap it in for the release DLL, and keep the release one renamed beside it.
-- **It must never ship.** Restore the release DLL before packaging, and make the packager check this.
+- The DLSS SDK (`lib/Windows_x86_64/dev/`) and the Streamline SDK (`bin/x64/development/`) ship a
+  **development** `nvngx_dlss.dll`, with debug overlays and Ctrl+Alt hotkeys. Swap it in for the release DLL, and
+  keep the release one renamed beside it.
+- **It must never ship** (the DLSS Programming Guide, 4.2). Restore the release DLL before packaging, and make the
+  packager check this.
 - Optional on-screen indicator: `HKLM\SOFTWARE\NVIDIA Corporation\Global\NGXCore`,
-  `ShowDlssIndicator = 1` (DWORD).
+  `ShowDlssIndicator` (DWORD), as in the SDK's `utils/ngx_driver_onscreenindicator.reg`. Any positive value works
+  with the development DLL; the release DLL needs 1024. It's a machine-wide registry change: ask the human first,
+  and set it back afterwards (`ngx_driver_onscreenindicator_off.reg`).
 - **Hotkeys, all Ctrl+Alt:**
 
   | Key | Does |
@@ -146,10 +150,11 @@ bool cut = seconds_since_last_frame > 0.5f || angle > 40.0f || move > 2.0f || zo
   through its own swap chain, and a hook on that one starves.
 - **Initialize with** `eUseManualHooking | eUseFrameBasedResourceTagging | eDisableCLStateTracking`.
   Without frame-based tagging, `slSetTagForFrame` fails.
-- **Send per-frame markers on the right threads.** Engines that simulate on one thread and render on
-  another need care:
-  - SimulationStart and SimulationEnd go on the main thread;
-  - RenderSubmit and Present go on the render thread;
+- **Send each per-frame marker where its work happens.** Engines that simulate on one thread and present on
+  another need care. In RE2:
+  - SimulationStart (with `slReflexSleep`) on the main thread as the frame's update begins;
+  - SimulationEnd and RenderSubmitStart on the main thread when it starts building the frame;
+  - RenderSubmitEnd, PresentStart and PresentEnd on the render thread, around the proxy Present;
   - all of them carry the same frame token, handed between the threads.
 - **Tag the frame at present:**
   - `slSetConstants` with the unjittered camera;
@@ -168,8 +173,9 @@ bool cut = seconds_since_last_frame > 0.5f || angle > 40.0f || move > 2.0f || zo
   Don't spoof the caller identity of the signed NR DLL, as one public add-on does.
 - **Parameters live under `DLSSNR.*`:** MVs and depth with their own subrects, `MVecScaleX/Y` (as for SR),
   `DepthInverted` and `Reset`, plus look controls (`Intensity`, `Style`, the structure strengths).
-- **Not redistributable:** `nvngx_dlssnr.dll` isn't in a public SDK. Let the player supply it, and switch
-  NR off cleanly when it's missing.
+- **Not redistributable:** `nvngx_dlssnr.dll` isn't in a public SDK (DLSS SDK 310.9.16 and Streamline 2.14.16,
+  both of 2026-10-16, still have none). Let the player copy it from a game they own that ships it (NBA 2K27 does,
+  see the RE2 note), never from a download site, and switch NR off cleanly when it's missing.
 
 ## Verification (RE2)
 - **Every SR input** was checked on the dev-DLL overlays. **Jitter sign and axes** were checked by the
